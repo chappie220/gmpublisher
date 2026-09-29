@@ -59,7 +59,8 @@ impl ExtractDestination {
 			Directory(path) => Some(path),
 
 			Addons => app_data!().gmod_dir().map(|mut path| {
-				path.push("GarrysMod");
+				// Lowercase: case-sensitive filesystems on Linux
+				path.push("garrysmod");
 				path.push("addons");
 				path.push(extracted_name.as_ref());
 				path

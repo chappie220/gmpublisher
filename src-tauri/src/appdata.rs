@@ -234,7 +234,15 @@ impl AppData {
 
 		if !steam!().connected() {
 			println!("Steam is not connected, parsing Steam library folders...");
-			match steamlocate::SteamDir::locate().and_then(|mut steam_dir| steam_dir.app(&GMOD_APP_ID.0).map(|steam_app| steam_app.path.to_owned())) {
+			// Checks every Steam installation (native, Flatpak, Snap...)
+			let located = steamlocate::locate_all().ok().and_then(|steam_dirs| {
+				steam_dirs.iter().find_map(|steam_dir| {
+					let (app, library) = steam_dir.find_app(GMOD_APP_ID.0).ok()??;
+					let dir = library.resolve_app_dir(&app);
+					dir.is_dir().then_some(dir)
+				})
+			});
+			match located {
 				Some(path) => {
 					println!("Located!");
 					return Some(path);
@@ -367,7 +375,8 @@ pub fn update_settings(mut settings: Settings) -> bool {
 
 #[tauri::command]
 pub fn validate_gmod(mut path: PathBuf) -> bool {
-	path.push("GarrysMod");
+	// Lowercase: case-sensitive filesystems on Linux
+	path.push("garrysmod");
 	path.push("addons");
 	path.is_absolute() && path.is_dir()
 }

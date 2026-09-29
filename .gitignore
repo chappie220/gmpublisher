@@ -29,3 +29,4 @@ dist-ssr
 WixTools/
 
 vite.config.js.*
+/src-tauri/gen/schemas/
