@@ -130,9 +130,10 @@ impl GameAddons {
 
 		let workshop_content_dir = GameAddons::get_workshop_content_dir(&gmod);
 
-		let addons_dir = gmod.join("GarrysMod/addons");
+		// The game's folder is lowercase "garrysmod", which matters on case-sensitive filesystems (Linux)
+		let addons_dir = gmod.join("garrysmod/addons");
 
-		gmod.push("GarrysMod/cache/workshop");
+		gmod.push("garrysmod/cache/workshop");
 		let cache_dir = gmod;
 
 		let (tx_metadata, rx_metadata) = mpsc::channel();

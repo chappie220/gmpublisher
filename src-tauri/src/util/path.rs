@@ -136,16 +136,30 @@ pub fn has_extension<P: AsRef<Path>, S: AsRef<str>>(path: P, extension: S) -> bo
 		.unwrap_or(false)
 }
 
+fn message_dialog(title: &str, message: String) {
+	use tauri_plugin_dialog::DialogExt;
+	crate::webview!().window().dialog().message(message).title(title).show(|_| {});
+}
+
 pub fn open<P: AsRef<Path>>(path: P) {
 	let path = path.as_ref();
 	if opener::open(path).is_err() {
-		tauri::api::dialog::message(None::<&tauri::Window<tauri::Wry>>, "File", path.to_string_lossy());
+		message_dialog("File", path.to_string_lossy().into_owned());
 	}
 }
 
 pub fn open_file_location<P: AsRef<Path>>(path: P) {
 	let path = dunce::canonicalize(path.as_ref()).unwrap_or_else(|_| path.as_ref().to_path_buf());
 
+	// D-Bus calls can take a moment (e.g. if the file manager needs to be started), don't block the command thread
+	#[cfg(target_os = "linux")]
+	std::thread::spawn(move || {
+		if reveal_linux(&path).is_err() {
+			message_dialog("File Location", path.display().to_string());
+		}
+	});
+
+	#[cfg(not(target_os = "linux"))]
 	if let Err(_) = (|| {
 		#[cfg(target_os = "windows")]
 		return std::process::Command::new("explorer").arg(format!("/select,{}", path.display())).spawn();
@@ -153,39 +167,94 @@ pub fn open_file_location<P: AsRef<Path>>(path: P) {
 		#[cfg(target_os = "macos")]
 		return std::process::Command::new("open").arg("-R").arg(&path).spawn();
 
-		#[cfg(target_os = "linux")]
-		{
-			let path = path.to_string_lossy().into_owned();
-			if path.contains(',') || path.contains('"') || path.contains('\\') {
-				let new_path = match std::fs::metadata(&path).unwrap().is_dir() {
-					true => path,
-					false => {
-						let mut path2 = PathBuf::from(path);
-						path2.pop();
-						path2.into_os_string().into_string().unwrap()
-					}
-				};
-				return std::process::Command::new("xdg-open").arg(&new_path).spawn();
-			} else {
-				if let Ok(fork::Fork::Child) = fork::daemon(false, false) {
-					return std::process::Command::new("dbus-send")
-						.args([
-							"--session",
-							"--dest=org.freedesktop.FileManager1",
-							"--type=method_call",
-							"/org/freedesktop/FileManager1",
-							"org.freedesktop.FileManager1.ShowItems",
-							format!("array:string:\"file://{path}\"").as_str(),
-							"string:\"\"",
-						])
-						.spawn();
-				}
-			};
-		}
-
 		#[allow(unreachable_code)]
 		Err(std::io::Error::new(std::io::ErrorKind::Other, "Unsupported OS"))
 	})() {
-		tauri::api::dialog::message(None::<&tauri::Window<tauri::Wry>>, "File Location", path.display().to_string());
+		message_dialog("File Location", path.display().to_string());
+	}
+}
+
+#[cfg(target_os = "linux")]
+fn file_uri(path: &Path) -> String {
+	use std::os::unix::ffi::OsStrExt;
+
+	let mut uri = String::from("file://");
+	for &byte in path.as_os_str().as_bytes() {
+		match byte {
+			b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' | b'/' => uri.push(byte as char),
+			_ => uri.push_str(&format!("%{:02X}", byte)),
+		}
+	}
+	uri
+}
+
+/// Highlights the file in the user's file manager (Nautilus, Dolphin, Nemo, Thunar...) using the
+/// org.freedesktop.FileManager1 D-Bus interface, falling back to opening the containing directory.
+#[cfg(target_os = "linux")]
+fn reveal_linux(path: &Path) -> Result<(), opener::OpenError> {
+	use std::process::{Command, Stdio};
+
+	// Percent-encoded, so it's safe to embed in the GVariant/dbus-send argument syntax
+	let uri = file_uri(path);
+
+	let call = |program: &str, args: &[&str]| {
+		Command::new(program)
+			.args(args)
+			.stdin(Stdio::null())
+			.stdout(Stdio::null())
+			.stderr(Stdio::null())
+			.status()
+			.map(|status| status.success())
+			.unwrap_or(false)
+	};
+
+	let revealed = call(
+		// gdbus ships with glib2, which WebKitGTK depends on, so it's always available
+		"gdbus",
+		&[
+			"call",
+			"--session",
+			"--timeout",
+			"10",
+			"--dest",
+			"org.freedesktop.FileManager1",
+			"--object-path",
+			"/org/freedesktop/FileManager1",
+			"--method",
+			"org.freedesktop.FileManager1.ShowItems",
+			&format!("['{uri}']"),
+			"''",
+		],
+	) || call(
+		"dbus-send",
+		&[
+			"--session",
+			"--print-reply",
+			"--reply-timeout=10000",
+			"--dest=org.freedesktop.FileManager1",
+			"--type=method_call",
+			"/org/freedesktop/FileManager1",
+			"org.freedesktop.FileManager1.ShowItems",
+			&format!("array:string:{uri}"),
+			"string:",
+		],
+	);
+
+	if revealed {
+		return Ok(());
+	}
+
+	let dir = if path.is_dir() { path } else { path.parent().unwrap_or(path) };
+	opener::open(dir)
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod tests {
+	#[test]
+	fn file_uri() {
+		assert_eq!(
+			super::file_uri(std::path::Path::new("/home/user/My Addons/a,b\"c'd/ü.gma")),
+			"file:///home/user/My%20Addons/a%2Cb%22c%27d/%C3%BC.gma"
+		);
 	}
 }

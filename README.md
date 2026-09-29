@@ -18,10 +18,41 @@ The easiest way to install is by downloading gmpublisher from the [releases page
 
 ### Linux
 
-You can usually use the provided ZIP file from the [releases page](https://github.com/WilliamVenner/gmpublisher/releases).
+gmpublisher uses WebKitGTK 4.1 (`webkit2gtk-4.1`), which is available on all current distributions (Fedora 39+, Ubuntu 22.04+, Debian 12+, Arch...).
+
+* **Fedora** (and other RPM-based distributions) users can install the `.rpm` from the [releases page](https://github.com/WilliamVenner/gmpublisher/releases):
+
+  ```sh
+  sudo dnf install ./gmpublisher-*.x86_64.rpm
+  ```
+
+* **Ubuntu / Debian** users can install the `.deb` from the [releases page](https://github.com/WilliamVenner/gmpublisher/releases):
+
+  ```sh
+  sudo apt install ./gmpublisher_*_amd64.deb
+  ```
 
 * **Arch Linux** users can install the application from the AUR via the package [`gmpublisher-bin`](https://aur.archlinux.org/packages/gmpublisher-bin).
-* *Note: Other Linux users may need to install additional dependencies.*
+
+* Other distributions can use the ZIP file from the [releases page](https://github.com/WilliamVenner/gmpublisher/releases). Install WebKitGTK 4.1 with your package manager, extract the ZIP and run `./gmpublisher` (keep `libsteam_api.so` next to it).
+
+Steam must be running for gmpublisher to connect to it. On Fedora, the native `steam` package from [RPM Fusion](https://rpmfusion.org/Howto/Steam) is recommended: gmpublisher can find Garry's Mod in a Flatpak Steam library, but the Flatpak sandbox may prevent it from connecting to the Steam client.
+
+#### Troubleshooting
+
+gmpublisher sets `WEBKIT_DISABLE_COMPOSITING_MODE=1` and `WEBKIT_DISABLE_DMABUF_RENDERER=1` by default to avoid blank windows with some GPU drivers (e.g. NVIDIA on Wayland). You can override either of them by setting it yourself, e.g. `WEBKIT_DISABLE_DMABUF_RENDERER=0 gmpublisher`.
+
+#### Building from source (Fedora)
+
+```sh
+sudo dnf install webkit2gtk4.1-devel openssl-devel curl wget file libappindicator-gtk3-devel librsvg2-devel libxdo-devel nodejs npm
+sudo dnf group install c-development
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+npm install
+npm run tauri build -- --bundles rpm
+sudo dnf install ./src-tauri/target/release/bundle/rpm/gmpublisher-*.rpm
+```
 
 ## Tutorials
 
@@ -75,7 +106,7 @@ You can usually use the provided ZIP file from the [releases page](https://githu
 
 Windows, macOS or Linux
 
-Linux users may need to install additional dependencies.
+Linux users need WebKitGTK 4.1 (`webkit2gtk4.1` on Fedora, `libwebkit2gtk-4.1-0` on Ubuntu/Debian, `webkit2gtk-4.1` on Arch). The `.rpm` and `.deb` packages install it automatically.
 
 ## Technical Stuff
 

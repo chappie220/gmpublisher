@@ -72,11 +72,24 @@ fn deadlock_watchdog() {
 	});
 }
 
-fn main() {
-	// https://github.com/WilliamVenner/gmpublisher/issues/210
-	if cfg!(target_os = "linux") {
-		std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+/// WebKitGTK rendering workarounds. Users can override these by setting the variables themselves.
+#[cfg(target_os = "linux")]
+fn webkit_workarounds() {
+	for var in [
+		// https://github.com/WilliamVenner/gmpublisher/issues/210
+		"WEBKIT_DISABLE_COMPOSITING_MODE",
+		// Blank window / "Error 71 (Protocol error) dispatching to Wayland display" on NVIDIA + Wayland (e.g. Fedora Workstation)
+		"WEBKIT_DISABLE_DMABUF_RENDERER",
+	] {
+		if std::env::var_os(var).is_none() {
+			std::env::set_var(var, "1");
+		}
 	}
+}
+
+fn main() {
+	#[cfg(target_os = "linux")]
+	webkit_workarounds();
 
 	std::panic::set_hook(Box::new(logging::panic));
 
@@ -98,10 +111,11 @@ fn main() {
 	println!("Starting GUI...");
 
 	tauri::Builder::default()
+		.plugin(tauri_plugin_dialog::init())
 		.setup(|app| {
 			let settings = APP_DATA.settings.read();
 
-			let window = app.get_window("gmpublisher").unwrap();
+			let window = app.get_webview_window("gmpublisher").unwrap();
 
 			window.set_title(&format!("gmpublisher v{}", env!("CARGO_PKG_VERSION"))).ok();
 
