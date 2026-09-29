@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+MimeType=application/x-gma;
+Actions=extract;
+X-KDE-Priority=TopLevel
+
+[Desktop Action extract]
+Name=Extract with gmpublisher
+Name[de]=Mit gmpublisher entpacken
+Name[es]=Extraer con gmpublisher
+Name[fr]=Extraire avec gmpublisher
+Name[pt_BR]=Extrair com gmpublisher
+Name[ru]=Распаковать с помощью gmpublisher
+Name[zh_CN]=使用 gmpublisher 解包
+Icon=gmpublisher
+Exec=gmpublisher --extract %f

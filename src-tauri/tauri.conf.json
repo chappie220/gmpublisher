@@ -46,16 +46,22 @@
 		"linux": {
 			"deb": {
 				"depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"],
-				"recommends": ["gstreamer1.0-plugins-good"],
+				"recommends": ["gstreamer1.0-plugins-good", "xdg-desktop-portal"],
+				"desktopTemplate": "linux/gmpublisher.desktop",
 				"files": {
-					"/usr/lib/gmpublisher/libsteam_api.so": "lib/steam_api/redistributable_bin/linux64/libsteam_api.so"
+					"/usr/lib/gmpublisher/libsteam_api.so": "lib/steam_api/redistributable_bin/linux64/libsteam_api.so",
+					"/usr/share/mime/packages/gmpublisher.xml": "linux/gmpublisher-mime.xml",
+					"/usr/share/kio/servicemenus/gmpublisher.desktop": "linux/gmpublisher-servicemenu.desktop"
 				}
 			},
 			"rpm": {
 				"depends": ["webkit2gtk4.1", "gtk3"],
-				"recommends": ["gstreamer1-plugins-good"],
+				"recommends": ["gstreamer1-plugins-good", "xdg-desktop-portal"],
+				"desktopTemplate": "linux/gmpublisher.desktop",
 				"files": {
-					"/usr/lib/gmpublisher/libsteam_api.so": "lib/steam_api/redistributable_bin/linux64/libsteam_api.so"
+					"/usr/lib/gmpublisher/libsteam_api.so": "lib/steam_api/redistributable_bin/linux64/libsteam_api.so",
+					"/usr/share/mime/packages/gmpublisher.xml": "linux/gmpublisher-mime.xml",
+					"/usr/share/kio/servicemenus/gmpublisher.desktop": "linux/gmpublisher-servicemenu.desktop"
 				}
 			}
 		},

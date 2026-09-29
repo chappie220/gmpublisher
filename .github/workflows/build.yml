@@ -44,8 +44,16 @@ jobs:
       run: |
         cd src-tauri/target/release
 
+        # Desktop integration (launcher, .gma MIME type, Dolphin service menu), laid out like ~/.local/share
+        install -Dm644 ../../linux/gmpublisher.desktop share/applications/gmpublisher.desktop
+        install -Dm644 ../../linux/gmpublisher-mime.xml share/mime/packages/gmpublisher.xml
+        install -Dm644 ../../linux/gmpublisher-servicemenu.desktop share/kio/servicemenus/gmpublisher.desktop
+        install -Dm644 ../../icons/32x32.png share/icons/hicolor/32x32/apps/gmpublisher.png
+        install -Dm644 ../../icons/128x128.png share/icons/hicolor/128x128/apps/gmpublisher.png
+        install -Dm644 ../../icons/128x128@2x.png share/icons/hicolor/256x256/apps/gmpublisher.png
+
         # libsteam_api.so is found next to the executable through its $ORIGIN rpath (see build.rs)
-        zip -r gmpublisher_linux64.zip gmpublisher libsteam_api.so
+        zip -r gmpublisher_linux64.zip gmpublisher libsteam_api.so share
 
     - uses: actions/upload-artifact@v4
       with:
@@ -86,6 +94,16 @@ jobs:
 
     - name: Smoke test
       run: gmpublisher --version
+
+    - name: Check desktop integration
+      run: |
+        dnf install -y desktop-file-utils shared-mime-info
+        desktop-file-validate /usr/share/applications/gmpublisher.desktop
+        test -f /usr/share/kio/servicemenus/gmpublisher.desktop
+        update-mime-database /usr/share/mime
+        grep -qx application/x-gma /usr/share/mime/types
+        update-desktop-database /usr/share/applications
+        grep -q '^application/x-gma=.*gmpublisher.desktop;' /usr/share/applications/mimeinfo.cache
 
   build_windows:
     runs-on: windows-latest

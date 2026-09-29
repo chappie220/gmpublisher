@@ -10,7 +10,7 @@ lazy_static! {
 }
 
 pub(super) fn stdin() -> bool {
-	use clap::{Arg, Command};
+	use clap::{Arg, ArgGroup, Command};
 
 	if !*CLI_MODE {
 		return false;
@@ -33,14 +33,20 @@ pub(super) fn stdin() -> bool {
 		.help("Extracts a .GMA file"),
 		//.conflicts_with_all(&["update", "in", "changes", "icon"]),
 
+		// Opening a .gma with gmpublisher from a file manager (see src-tauri/linux/gmpublisher.desktop)
+		Arg::new("file")
+		.value_name("FILE")
+		.help("Extracts a .GMA file (same as --extract)"),
+
 		Arg::new("out")
 		.short('o')
 		.long("out")
 		.value_name("PATH")
 		.help("Sets the output path for extracting GMAs. Defaults to the temp directory.")
-		.requires("extract")
+		.requires("input")
 		//.conflicts_with_all(&["update", "in", "changes", "icon"])
 	])
+	.group(ArgGroup::new("input").args(["extract", "file"]))
 	/*.args(&[
 		Arg::with_name("update")
 		.short('u')
@@ -79,7 +85,7 @@ pub(super) fn stdin() -> bool {
 
 	dprintln!("{:#?}", matches);
 
-	if let Some(extract_path) = matches.get_one::<String>("extract") {
+	if let Some(extract_path) = matches.get_one::<String>("extract").or_else(|| matches.get_one::<String>("file")) {
 		let extract_path = PathBuf::from(extract_path);
 
 		if !extract_path.is_file() {
