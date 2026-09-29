@@ -34,9 +34,20 @@ gmpublisher uses WebKitGTK 4.1 (`webkit2gtk-4.1`), which is available on all cur
 
 * **Arch Linux** users can install the application from the AUR via the package [`gmpublisher-bin`](https://aur.archlinux.org/packages/gmpublisher-bin).
 
-* Other distributions can use the ZIP file from the [releases page](https://github.com/WilliamVenner/gmpublisher/releases). Install WebKitGTK 4.1 with your package manager, extract the ZIP and run `./gmpublisher` (keep `libsteam_api.so` next to it).
+* Other distributions can use the ZIP file from the [releases page](https://github.com/WilliamVenner/gmpublisher/releases). Install WebKitGTK 4.1 with your package manager, extract the ZIP and run `./gmpublisher` (keep `libsteam_api.so` next to it). To add the launcher, icons and `.gma` file association, copy the ZIP's `share` folder into `~/.local` and make sure `gmpublisher` is on your `PATH` (e.g. symlink it into `~/.local/bin`).
 
 Steam must be running for gmpublisher to connect to it. On Fedora, the native `steam` package from [RPM Fusion](https://rpmfusion.org/Howto/Steam) is recommended: gmpublisher can find Garry's Mod in a Flatpak Steam library, but the Flatpak sandbox may prevent it from connecting to the Steam client.
+
+#### KDE Plasma
+
+gmpublisher integrates with KDE Plasma (X11 and Wayland):
+
+* File and folder pickers open the native KDE file dialog through the [XDG Desktop Portal](https://flatpak.github.io/xdg-desktop-portal/) (`xdg-desktop-portal-kde`, installed by default with Plasma). Other desktops get their own native dialog the same way. If no portal is running, gmpublisher falls back to `zenity`.
+* Message boxes use `kdialog` when it's installed.
+* `.gma` files are registered as "Packed Garry's Mod Addon" (`application/x-gma`). Dolphin shows **Extract with gmpublisher** in their right-click menu, and opening a `.gma` with gmpublisher extracts it and opens the extracted folder.
+* "Open file location" highlights the file in Dolphin.
+
+The `.rpm`, `.deb` and AUR packages install all of this. From the command line, `gmpublisher addon.gma` extracts a GMA just like `gmpublisher --extract addon.gma`.
 
 #### Troubleshooting
 
@@ -71,7 +82,7 @@ sudo dnf install ./src-tauri/target/release/bundle/rpm/gmpublisher-*.rpm
 * Supports legacy SteamPipe addons and old GMA versions
 * Works without an Internet connection
 * CLI interface
-* (Windows) .GMA file type association for quick extraction
+* (Windows, Linux) .GMA file type association for quick extraction
 
 ## Languages
 

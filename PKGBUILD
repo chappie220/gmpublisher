@@ -8,15 +8,16 @@ pkgdesc="Workshop Publishing Utility for Garry's Mod, written in Rust & Svelte a
 arch=('x86_64')
 url="https://github.com/WilliamVenner/gmpublisher"
 license=('GPL-3.0')
-depends=('webkit2gtk-4.1' 'libsoup3' 'hicolor-icon-theme' 'libappindicator-gtk3' 'gst-plugins-good' 'gst-plugins-bad' 'gst-libav')
+depends=('webkit2gtk-4.1' 'libsoup3' 'hicolor-icon-theme' 'libappindicator-gtk3' 'gst-plugins-good' 'gst-plugins-bad' 'gst-libav' 'xdg-desktop-portal')
+optdepends=('xdg-desktop-portal-kde: native KDE Plasma file dialogs'
+            'kdialog: native KDE Plasma message boxes'
+            'zenity: file dialogs when no XDG desktop portal is available')
 makedepends=('unzip')
 provides=("${_realname}")
 conflicts=("${_realname}")
 source=("${_realname}_linux64.zip::https://github.com/WilliamVenner/${_realname}/releases/download/${pkgver}/${_realname}_linux64.zip"
-        "LICENSE::https://raw.githubusercontent.com/WilliamVenner/${_realname}/${pkgver}/LICENSE"
-        "${_realname}.png::https://raw.githubusercontent.com/WilliamVenner/${_realname}/${pkgver}/src-tauri/icons/128x128.png")
+        "LICENSE::https://raw.githubusercontent.com/WilliamVenner/${_realname}/${pkgver}/LICENSE")
 sha256sums=('SKIP'
-            'SKIP'
             'SKIP')
 
 package() {
@@ -33,18 +34,8 @@ EOF
 
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
-  install -Dm644 "${srcdir}/${_realname}.png" "$pkgdir/usr/share/icons/hicolor/128x128/apps/${_realname}.png"
-
-  install -d "$pkgdir/usr/share/applications"
-  cat << EOF > "$pkgdir/usr/share/applications/${_realname}.desktop"
-[Desktop Entry]
-Name=gmpublisher
-Comment=${pkgdesc}
-Exec=${_realname}
-Icon=${_realname}
-Type=Application
-Categories=Utility;Game;
-EOF
+  # Launcher, icons, .gma MIME type and Dolphin service menu (see src-tauri/linux)
+  cp -r --no-preserve=mode "${srcdir}/share" "$pkgdir/usr/"
 }
 
 post_install() {

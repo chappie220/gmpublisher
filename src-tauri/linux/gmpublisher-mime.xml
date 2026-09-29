@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+	<mime-type type="application/x-gma">
+		<comment>Packed Garry's Mod Addon</comment>
+		<comment xml:lang="de">Gepacktes Garry's Mod-Addon</comment>
+		<comment xml:lang="es">Addon de Garry's Mod Empaquetado</comment>
+		<comment xml:lang="fr">Addon Garry's Mod compressé</comment>
+		<comment xml:lang="nl">Ingepakte Garry's Mod Addon</comment>
+		<comment xml:lang="pl">Zapakowany dodatek do Garry's Mod</comment>
+		<comment xml:lang="pt_BR">Garry's Mod Addon Empacotado</comment>
+		<comment xml:lang="ru">Упакованное дополнение Garry's Mod</comment>
+		<comment xml:lang="tr">Paketlenmiş Garry's Mod Eklentisi</comment>
+		<comment xml:lang="zh_CN">已打包的 Garry's Mod 模组文件</comment>
+		<acronym>GMA</acronym>
+		<generic-icon name="package-x-generic"/>
+		<magic priority="50">
+			<match type="string" value="GMAD" offset="0"/>
+		</magic>
+		<glob pattern="*.gma"/>
+	</mime-type>
+</mime-info>

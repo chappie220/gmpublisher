@@ -1,0 +1,25 @@
+[Desktop Entry]
+Type=Application
+Name=gmpublisher
+GenericName=Workshop Publisher
+GenericName[de]=Workshop-Veröffentlichung
+GenericName[es]=Publicador de Workshop
+GenericName[fr]=Publication Workshop
+GenericName[pt_BR]=Publicador da Oficina
+GenericName[ru]=Публикация в Мастерской
+GenericName[zh_CN]=创意工坊发布工具
+Comment=Garry's Mod Workshop Publishing Utility
+Comment[de]=Workshop-Veröffentlichungstool für Garry's Mod
+Comment[es]=Utilidad de publicación en Workshop para Garry's Mod
+Comment[fr]=Utilitaire de publication Workshop pour Garry's Mod
+Comment[pt_BR]=Utilitário de publicação na Oficina do Garry's Mod
+Comment[ru]=Утилита для публикации в Мастерской Garry's Mod
+Comment[zh_CN]=Garry's Mod 创意工坊发布工具
+Keywords=gmod;garrysmod;garry's mod;workshop;steam;addon;gma;
+Exec=gmpublisher %f
+Icon=gmpublisher
+Terminal=false
+Categories=Development;
+MimeType=application/x-gma;
+StartupWMClass=gmpublisher
+SingleMainWindow=true

@@ -137,8 +137,51 @@ pub fn has_extension<P: AsRef<Path>, S: AsRef<str>>(path: P, extension: S) -> bo
 }
 
 fn message_dialog(title: &str, message: String) {
+	#[cfg(target_os = "linux")]
+	if is_kde_session() && kdialog_message(title, &message) {
+		return;
+	}
+
+	// There's no window in CLI mode (e.g. when launched from a file manager's "Open With" menu)
+	if *crate::cli::CLI_MODE {
+		eprintln!("{}: {}", title, message);
+		return;
+	}
+
 	use tauri_plugin_dialog::DialogExt;
 	crate::webview!().window().dialog().message(message).title(title).show(|_| {});
+}
+
+/// XDG_CURRENT_DESKTOP is a colon-separated list, e.g. "KDE" on Plasma
+#[cfg(target_os = "linux")]
+fn is_kde_session() -> bool {
+	std::env::var("XDG_CURRENT_DESKTOP")
+		.map(|desktops| desktops.split(':').any(|desktop| desktop.eq_ignore_ascii_case("KDE")))
+		.unwrap_or(false)
+}
+
+/// Shows a native KDE message box. Returns false if kdialog isn't installed.
+#[cfg(target_os = "linux")]
+fn kdialog_message(title: &str, message: &str) -> bool {
+	use std::process::{Command, Stdio};
+
+	match Command::new("kdialog")
+		.arg("--title")
+		.arg(title)
+		.arg("--msgbox")
+		.arg(message)
+		.stdin(Stdio::null())
+		.stdout(Stdio::null())
+		.stderr(Stdio::null())
+		.spawn()
+	{
+		Ok(mut child) => {
+			// Reap the process once the message box is closed
+			std::thread::spawn(move || child.wait());
+			true
+		}
+		Err(_) => false,
+	}
 }
 
 pub fn open<P: AsRef<Path>>(path: P) {
