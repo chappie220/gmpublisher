@@ -214,8 +214,8 @@
 				}
 
 				tagLabels[tag] = {
-					x: centerX,
-					y: centerY,
+					x,
+					y,
 					w: square.w,
 					h: square.h,
 					padding,
@@ -286,15 +286,18 @@
 		}
 	}
 
+	const TAG_LABEL_MAX_SIZE = 28;
+	const TAG_LABEL_MARGIN = 6;
 	function drawTag(tag) {
 		let { w, h, x, y, padding, hanging } = tagLabels[tag];
 
 		const aspectRatio = w / h;
 		const verticalText = aspectRatio <= 0.33;
 
-		const textBoundsWidth = Math.floor((w - padding) * .75);
-		const textBoundsHeight = Math.floor((h - padding) * .75);
-		let textSize = Math.floor(w);
+		// Small label in the corner of the tag's square so it doesn't cover the addon previews
+		const textBoundsWidth = Math.floor(w - (padding + TAG_LABEL_MARGIN) * 2);
+		const textBoundsHeight = Math.floor(h - (padding + TAG_LABEL_MARGIN) * 2);
+		let textSize = Math.min(Math.floor(w), TAG_LABEL_MAX_SIZE);
 		let metrics;
 		while (textSize > 1) {
 			tagsCtx.font = textSize-- + 'px sans-serif';
@@ -307,23 +310,25 @@
 			) break;
 		}
 
+		const inset = padding + TAG_LABEL_MARGIN;
+
+		tagsCtx.save();
 		if (verticalText) {
-			tagsCtx.save();
-			tagsCtx.translate(x, y);
-				tagsCtx.rotate(canvasRotation);
-			tagsCtx.translate(-x, -y);
+			// Read bottom-to-top, starting from the bottom-left corner
+			tagsCtx.translate(x + inset, y + h - inset);
+			tagsCtx.rotate(canvasRotation);
+		} else {
+			tagsCtx.translate(x + inset, y + inset);
 		}
 
 		tagsCtx.font = textSize + 'px sans-serif';
 		tagsCtx.fillStyle = '#fff';
 		tagsCtx.strokeStyle = '#000';
-		tagsCtx.lineWidth = Math.min(Math.max(Math.ceil(textSize * 0.2), 4), (14 / 1920) * window.innerWidth);
-		tagsCtx.strokeText(tag, x, y);
-		tagsCtx.fillText(tag, x, y);
+		tagsCtx.lineWidth = Math.max(Math.ceil(textSize * 0.2), 3);
+		tagsCtx.strokeText(tag, 0, 0);
+		tagsCtx.fillText(tag, 0, 0);
 
-		if (verticalText) {
-			tagsCtx.restore();
-		}
+		tagsCtx.restore();
 	}
 
 	let tagFiltering;
@@ -366,8 +371,8 @@
 		tagsCtx = tagsCanvas.getContext('2d');
 		tagsCtx.scale(scale, scale);
 		tagsCtx.clearRect(0, 0, tagsCanvas.width, tagsCanvas.height);
-		tagsCtx.textAlign = 'center';
-		tagsCtx.textBaseline = 'middle';
+		tagsCtx.textAlign = 'left';
+		tagsCtx.textBaseline = 'top';
 		tagsCtx.lineJoin = 'round';
 
 		addonsCtx = addonsCanvas.getContext('2d');
