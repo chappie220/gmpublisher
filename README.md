@@ -51,7 +51,7 @@ The `.rpm`, `.deb` and AUR packages install all of this. From the command line, 
 
 #### Troubleshooting
 
-gmpublisher sets `WEBKIT_DISABLE_COMPOSITING_MODE=1` and `WEBKIT_DISABLE_DMABUF_RENDERER=1` by default to avoid blank windows with some GPU drivers (e.g. NVIDIA on Wayland). You can override either of them by setting it yourself, e.g. `WEBKIT_DISABLE_DMABUF_RENDERER=0 gmpublisher`.
+gmpublisher runs WebKitGTK with GPU compositing enabled. On the proprietary NVIDIA driver it sets `__NV_DISABLE_EXPLICIT_SYNC=1` to avoid blank windows / "Error 71" on Wayland. If rendering is still broken on your setup, you can fall back to slower software paths with `WEBKIT_DISABLE_DMABUF_RENDERER=1` or `WEBKIT_DISABLE_COMPOSITING_MODE=1`, e.g. `WEBKIT_DISABLE_DMABUF_RENDERER=1 gmpublisher`.
 
 #### Building from source (Fedora)
 
