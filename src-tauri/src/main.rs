@@ -73,17 +73,16 @@ fn deadlock_watchdog() {
 }
 
 /// WebKitGTK rendering workarounds. Users can override these by setting the variables themselves.
+///
+/// We deliberately do NOT set WEBKIT_DISABLE_COMPOSITING_MODE or WEBKIT_DISABLE_DMABUF_RENDERER by default:
+/// both force WebKit off its GPU path and make the UI extremely laggy. If rendering is broken on some setup,
+/// users can still set them manually (e.g. `WEBKIT_DISABLE_DMABUF_RENDERER=1 gmpublisher`).
 #[cfg(target_os = "linux")]
 fn webkit_workarounds() {
-	for var in [
-		// https://github.com/WilliamVenner/gmpublisher/issues/210
-		"WEBKIT_DISABLE_COMPOSITING_MODE",
-		// Blank window / "Error 71 (Protocol error) dispatching to Wayland display" on NVIDIA + Wayland (e.g. Fedora Workstation)
-		"WEBKIT_DISABLE_DMABUF_RENDERER",
-	] {
-		if std::env::var_os(var).is_none() {
-			std::env::set_var(var, "1");
-		}
+	// Blank window / "Error 71 (Protocol error) dispatching to Wayland display" on the proprietary NVIDIA driver + Wayland
+	// is caused by the driver's explicit sync support; disabling it keeps the (fast) DMABUF renderer working.
+	if std::path::Path::new("/sys/module/nvidia").exists() && std::env::var_os("__NV_DISABLE_EXPLICIT_SYNC").is_none() {
+		std::env::set_var("__NV_DISABLE_EXPLICIT_SYNC", "1");
 	}
 }
 
