@@ -65,6 +65,19 @@ npm run tauri build -- --bundles rpm
 sudo dnf install ./src-tauri/target/release/bundle/rpm/gmpublisher-*.rpm
 ```
 
+#### Building from source (Debian / Ubuntu)
+
+```sh
+sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev nodejs npm
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+npm install
+npm run tauri build -- --bundles deb
+sudo apt install ./src-tauri/target/release/bundle/deb/gmpublisher_*_amd64.deb
+```
+
+Use rustup rather than the distribution's `rustc` package, which may be too old for Tauri 2.
+
 ## Tutorials
 
 [DanFMN - Fastest Way to Upload a Garry's Mod Addon To Workshop](https://youtu.be/_syLXTFXmgM)
